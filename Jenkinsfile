@@ -52,12 +52,14 @@ pipeline {
          parallel {
           stage('PreContainer check') {
              steps{
-                try {
-                   bat "docker rm -f c-${username}-master"
-                }
-                catch (Exception err) {
-                     //container is not present
-                }    
+		     script {
+                	try {
+                   		bat "docker rm -f c-${username}-master"
+                	}
+                	catch (Exception err) {
+                     	//container is not present
+                	}
+		     }
               }
           }
           stage('Push image to docker hub') {
