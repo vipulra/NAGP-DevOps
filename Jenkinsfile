@@ -76,7 +76,7 @@ pipeline {
       }
       stage('Deploying our image') {
          steps {
-            bat "docker run --name c-${username}-master -d -p 7100:8800 ${registry}:lastest"
+            bat "docker run --name c-${username}-master -d -p 7100:8800 ${registry}:latest"
          }
       }
       
