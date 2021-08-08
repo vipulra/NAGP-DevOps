@@ -41,24 +41,48 @@ pipeline {
             }
          }
       }
-      stage('Create Docker Image') {
+      
+      stage('Docker Image') {
          steps {
             bat "docker build -t i-${username}-master --no-cache -f Dockerfile ."
          }
       }
-      stage('Move our image to Docker registry') {
-         steps {
-            bat "docker tag i-${username}-master ${registry}:${BUILD_NUMBER}"
-            withDockerRegistry([credentialsId: 'Test_Docker', url: ""]) {
-               bat "docker push ${registry}:${BUILD_NUMBER}"
-            }
+      
+      stage('Container') {
+         parallel {
+          stage('PreContainer check') {
+             steps{
+                try {
+                   bat "docker rm -f c-${username}-master"
+                }
+                catch (Exception err) {
+                     //container is not present
+                }    
+              }
+          }
+          stage('Push image to docker hub') {
+              steps {
+               bat "docker tag i-${username}-master:${BUILD_NUMBER} ${registry}:${BUILD_NUMBER}"
+		         bat "docker tag i-${username}-master:${BUILD_NUMBER} ${registry}:latest"
+		         withDockerRegistry([credentialsId: 'Test_Docker', url:""]){
+			         bat "docker push ${registry}:${BUILD_NUMBER}"
+			         bat "docker push ${registry}:latest"     
+		       }
+           }
+         }
          }
       }
       stage('Deploying our image') {
          steps {
-            bat "docker run --name c-${username}-master -d -p 7100:8800 ${registry}:${BUILD_NUMBER}"
+            bat "docker run --name c-${username}-master -d -p 7100:8800 ${registry}:lastest"
          }
       }
+      
+      stage ("Deploy to GKE"){
+		steps{	
+	             bat "kubectl apply -f deployment.yaml"
+		}
+	}
 
    }
 }
