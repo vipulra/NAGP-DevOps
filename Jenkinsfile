@@ -82,7 +82,8 @@ pipeline {
       
       stage ("Deploy to GKE"){
 		steps{	
-	             bat "kubectl apply -f deployment.yaml"
+			bat "kubectl create -f app-deployment.yml -v=8"
+// 	             bat "kubectl apply -f deployment.yaml"
 		}
 	}
 
